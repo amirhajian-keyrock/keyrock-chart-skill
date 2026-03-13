@@ -15,8 +15,8 @@ Before doing anything else on first use, verify the following. If any check fail
 3. Logo assets exist: `~/.claude/keyrock/assets/keyrock-logo-black.png` and `keyrock-logo-white.png`
 4. Python 3 is available: run `python3 --version`
 5. matplotlib is installed: run `python3 -c "import matplotlib"`
-6. Check if Inter font is installed: run `python3 -c "import matplotlib.font_manager as fm; fonts = [f.name for f in fm.fontManager.ttflist]; print('Inter' in fonts)"`
-   - If Inter is not found, suggest: `brew install --cask font-inter` then clear the matplotlib font cache with `python3 -c "import matplotlib; import shutil; shutil.rmtree(matplotlib.get_cachedir(), ignore_errors=True)"` and note that charts will fall back to Helvetica Neue until Inter is installed.
+6. Check if FK Grotesk Neue font files exist: run `ls ~/.claude/keyrock/assets/fonts/FKGroteskNeue-Regular.ttf`
+   - If not found, warn the user that FK Grotesk Neue TTF files are missing from `~/.claude/keyrock/assets/fonts/` and charts will fall back to Helvetica Neue.
 
 If all checks pass, proceed silently to the workflow.
 
@@ -76,25 +76,42 @@ Do NOT skip this step. Wait for the user to confirm or request changes.
 
 Write a complete, self-contained Python script that:
 
-1. Includes the full brand setup block from `brand-system.md` section 11 (light mode by default, dark mode if requested)
-2. Includes the `add_keyrock_logo()` function from section 12
-3. Includes the `export_chart()` function from section 13
-4. Uses the appropriate chart template from `chart-templates.md` as the structural starting point
-5. Embeds the user's data inline OR reads from the provided file path
-6. Applies all brand rules: palette, font config, gridlines, margins, number formatting
-7. Adds the Keyrock logo (bottom-right by default, using the correct variant for the colour mode)
-8. Adds a source line: "Source: Keyrock Research" (unless the user specified otherwise)
-9. Exports in SVG (master), PNG, and PDF at 250 DPI
+1. Includes the full brand setup block from `brand-system.md` section 12 (light mode by default, dark mode if requested)
+2. Includes the `style_axes()` helper from section 13
+3. Includes the `add_keyrock_logo()` function from section 14
+4. Includes the `export_chart()` function from section 15
+5. Uses the appropriate chart template from `chart-templates.md` as the structural starting point
+6. Embeds the user's data inline OR reads from the provided file path
+7. Applies all brand rules: palette, font config, axis styling, number formatting
+8. Adds the Keyrock logo (bottom-right by default, using the correct variant for the colour mode)
+9. Adds a source line: "Source: Keyrock Research" (unless the user specified otherwise)
+10. Exports in SVG (master), PNG, and PDF at 250 DPI
 
 Follow chart colour assignment rules from brand-system.md section 7:
-- Semantic meaning first (green=positive, coral=negative, amber=attention)
-- Primary series: BLUE or TEAL
-- Categorical data: cycle through CHART_COLORS in order
+- **Primary blues first:** Use `CHART_COLORS` (8 blue tones) for all standard data series
+- **Secondary purples for 9+ series only:** Extend into `CHART_COLORS_EXTENDED` when more than 8 categories
+- **Accent orange for highlighting only:** Use `ACCENT_ORANGE` to call out a specific data point — never as a default series colour
+- **Single-series default:** `PRIMARY_DEFAULT` (`#3867FF`)
+- **Semantic exceptions:** For waterfall positive/negative and KPI trends, use inline green (`#10B981`) and red (`#EF4444`)
 - Never use background or text colours for data series
 
-### Step 6: Render
+### Step 6: Render and Quality Check
 
-Execute the Python script using `python3`. Confirm the output files were created by checking the filesystem.
+Execute the Python script using `python3`. Confirm the output files were created, then **visually inspect the generated PNG** for these common issues before presenting:
+
+**Spacing checks:**
+- No large whitespace gaps between the title and the chart area — use `plt.tight_layout()` and adjust `rect` padding
+- No large whitespace gap between the chart and the source line — the source line should sit close below the chart
+- Title padding should be 15–20px, not excessive
+
+**Overlap checks:**
+- Data labels must not overlap with bars, lines, or other data labels — offset them if needed
+- Axis tick labels must not collide with each other — rotate or reduce frequency if crowded
+- Legend must not overlap with data points — reposition if it does
+- Annotations must not overlap with data series — adjust `xytext` offsets
+- If labels are close to data elements, ensure there is just enough spacing to be readable without large gaps
+
+**If any issues are found**, fix the script and re-render before presenting to the user.
 
 ### Step 7: Present
 
@@ -112,7 +129,7 @@ When the user provides feedback:
 Examples of iterative changes:
 - "Make the title shorter" — update the title string
 - "Use dark mode" — apply the dark mode override block and switch logo variant
-- "Change bar colour to teal" — swap the colour
+- "Change bar colour to darker blue" — swap to a different PRIMARY shade
 - "Add a data label on the peak value" — add an annotation
 - "Remove the logo" — skip the logo call
 - "Make it wider" — adjust figsize
@@ -163,7 +180,7 @@ If you make ANY assumptions about the data or chart design, you MUST list them i
 |---|---|
 | matplotlib not installed | Provide `pip install matplotlib` instructions |
 | Data file unreadable | Explain the issue, ask the user for help |
-| Inter font unavailable | Fall back silently to Helvetica Neue — do not error |
+| FK Grotesk Neue font unavailable | Fall back silently to Inter / Inter Tight / Helvetica Neue — do not error |
 | Logo file missing | Skip logo placement — do not fail |
 | openpyxl missing (for Excel) | Provide `pip install openpyxl` instructions |
 | Script execution fails | Show the error, explain what went wrong, fix and retry |

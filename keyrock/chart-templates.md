@@ -47,17 +47,17 @@
 
 ```python
 # Single title
-ax.set_title('Chart Title Here', fontsize=18, color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
+ax.set_title('Chart Title Here', fontsize=22, color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
 
 # Title + subtitle
-fig.suptitle('Main Title', fontsize=20, weight='bold', color=TEXT_PRIMARY, y=0.98)
-ax.set_title('Subtitle text here', fontsize=12, color=TEXT_SECONDARY, pad=10)
+fig.suptitle('Main Title', fontsize=22, weight='bold', color=TEXT_PRIMARY, y=0.98)
+ax.set_title('Subtitle text here', fontsize=12, color=TEXT_PRIMARY, pad=10)
 ```
 
 ### Source Lines
 
 ```python
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 ```
 
 ### Number Formatting
@@ -89,9 +89,9 @@ colors = CHART_COLORS[:n_categories]
 colors = CHART_COLORS_EXTENDED[:n_categories]
 ```
 
-The extended palette (`CHART_COLORS_EXTENDED`) leads with periwinkle, cornflower, slate, orchid, and orange — colours drawn from Keyrock's research visual identity. These provide a more cohesive, institutional feel when many categories appear together. Standard accents (teal, blue, amber, etc.) are appended after the first five for charts needing more than 5 colours.
+The primary palette (`CHART_COLORS` / `PRIMARY`) provides 8 blue tones — from bright `#3867FF` through periwinkle, cornflower, and slate — that form a cohesive, institutional sequence for most charts. For 9+ categories, `CHART_COLORS_EXTENDED` (`PRIMARY + SECONDARY`) appends three purple tones to extend the palette without breaking visual harmony.
 
-When semantic meaning applies (e.g., green = positive, coral = negative), semantic colours override the cycle regardless of category count.
+When semantic meaning applies (e.g., `#10B981` green = positive, `#EF4444` red = negative), inline semantic hex values override the cycle regardless of category count. Use `ACCENT_ORANGE` (`#FF7800`) only for deliberate highlighting or milestone markers, never as a series colour.
 
 ### Grid and Spine Rules
 
@@ -115,10 +115,10 @@ ax.grid(axis='y', alpha=0.15, linewidth=0.5)
 
 ```python
 # Bar charts — legend above chart or integrated into title
-ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # Line charts — upper-left or upper-right
-ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # Pie/donut — labels on chart, no separate legend
 
@@ -134,42 +134,37 @@ for bar in bars:
     height = bar.get_height()
     ax.text(bar.get_x() + bar.get_width() / 2, height + offset,
             format_number(height), ha='center', va='bottom',
-            fontsize=9, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # Horizontal bar value labels
 for bar in bars:
     width = bar.get_width()
     ax.text(width + offset, bar.get_y() + bar.get_height() / 2,
             format_number(width), ha='left', va='center',
-            fontsize=9, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # Line chart endpoint annotation
 ax.annotate(f'{y_values[-1]:.1f}%',
             xy=(x_values[-1], y_values[-1]),
             xytext=(10, 0), textcoords='offset points',
-            fontsize=9, color=line_color, weight='bold')
+            fontsize=12, color=line_color, weight='bold')
 ```
 
 ### Axis Rules
 
 ```python
-# Always remove top and right spines
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-
-# Spine colour
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-
-# Tick colours
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
+# Apply standard Keyrock axis styling (defined in brand-system.md section 13)
+style_axes(ax)  # default: y-axis grid only
+style_axes(ax, grid_axis='x')   # for horizontal bar charts
+style_axes(ax, grid_axis='both') # for scatter plots
+style_axes(ax, grid_axis=None)   # no grid
 
 # Rotate x-axis labels if dates or long labels
 ax.tick_params(axis='x', rotation=45)
 plt.setp(ax.get_xticklabels(), ha='right')
 
 # Y-axis label when unit not obvious
-ax.set_ylabel('Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
+ax.set_ylabel('Volume (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
 ```
 
 ---
@@ -188,9 +183,9 @@ ax.set_ylabel('Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
 - Compact/dashboard: `figsize=(8, 5)`
 
 **Colour assignment:**
-- Single series: `TEAL` for all bars, or `BLUE` if teal conflicts with context
+- Single series: `PRIMARY_DEFAULT` for all bars, or `PRIMARY[4]` if extra contrast is needed
 - Grouped: cycle through `CHART_COLORS` in order — one colour per series
-- Highlight a specific bar: use `AMBER` for the bar to call out, rest in `TEAL`
+- Highlight a specific bar: use `ACCENT_ORANGE` for the bar to call out, rest in `PRIMARY_DEFAULT`
 
 **Key styling rules:**
 - Bar width 0.6 for single series, adjusted for grouped
@@ -214,29 +209,24 @@ fig, ax = plt.subplots(figsize=(10, 6), facecolor=BG)
 ax.set_facecolor(BG)
 
 # --- Bars ---
-bars = ax.bar(categories, values, width=0.6, color=TEAL, edgecolor='none', zorder=3)
+bars = ax.bar(categories, values, width=0.6, color=PRIMARY_DEFAULT, edgecolor='none', zorder=3)
 
 # --- Value labels ---
 for bar in bars:
     height = bar.get_height()
     ax.text(bar.get_x() + bar.get_width() / 2, height + max(values) * 0.02,
             format_number(height), ha='center', va='bottom',
-            fontsize=9, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # --- Styling ---
-ax.set_title('24h Trading Volume by Asset', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('24h Trading Volume by Asset', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=20, loc='center')
-ax.set_ylabel('Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('Volume (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: format_number(x)))
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -274,22 +264,17 @@ for i, (label, vals) in enumerate(data.items()):
                   color=CHART_COLORS[i], edgecolor='none', zorder=3)
 
 # --- Styling ---
-ax.set_title('Quarterly Trading Volume by Venue Type', fontsize=18,
+ax.set_title('Quarterly Trading Volume by Venue Type', fontsize=22,
              color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
 ax.set_xticks(x)
 ax.set_xticklabels(categories)
-ax.set_ylabel('Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('Volume (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: format_number(x)))
-ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -297,7 +282,7 @@ export_chart(fig, 'vertical_bar_grouped')
 ```
 
 **Variation notes:**
-- To highlight one bar: create a colours list where one entry is `AMBER` and the rest are `TEAL`
+- To highlight one bar: create a colours list where one entry is `ACCENT_ORANGE` and the rest are `PRIMARY_DEFAULT`
 - For many categories (>8): consider switching to horizontal bar chart
 - For negative values: bars extend below zero — add `ax.axhline(y=0, color=GRID_COLOR, linewidth=0.8)` as a baseline
 
@@ -313,9 +298,9 @@ export_chart(fig, 'vertical_bar_grouped')
 - Compact: `figsize=(8, 5)`
 
 **Colour assignment:**
-- Single series: `TEAL` for all bars
+- Single series: `PRIMARY_DEFAULT` for all bars
 - Grouped: cycle through `CHART_COLORS`
-- Top-N highlight: `TEAL` for top items, `GRID_COLOR` or lighter teal for rest
+- Top-N highlight: `PRIMARY_DEFAULT` for top items, `GRID_COLOR` or lighter blue for rest
 
 **Key styling rules:**
 - Value labels to the right of bars
@@ -344,7 +329,7 @@ fig, ax = plt.subplots(figsize=(10, 6), facecolor=BG)
 ax.set_facecolor(BG)
 
 # --- Bars ---
-bars = ax.barh(categories, values, height=0.6, color=TEAL, edgecolor='none', zorder=3)
+bars = ax.barh(categories, values, height=0.6, color=PRIMARY_DEFAULT, edgecolor='none', zorder=3)
 
 # --- Value labels ---
 max_val = max(values)
@@ -352,25 +337,20 @@ for bar in bars:
     width = bar.get_width()
     ax.text(width + max_val * 0.02, bar.get_y() + bar.get_height() / 2,
             format_number(width), ha='left', va='center',
-            fontsize=9, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # --- Styling ---
-ax.set_title('24h Spot Volume by Exchange', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('24h Spot Volume by Exchange', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=20, loc='center')
-ax.set_xlabel('Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='x', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_xlabel('Volume (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax, grid_axis='x')
 ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: format_number(x)))
 
 # Expand x-axis for label room
 ax.set_xlim(0, max(values) * 1.15)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -412,22 +392,17 @@ for i, (label, vals) in enumerate(data.items()):
             color=CHART_COLORS[i], edgecolor='none', zorder=3)
 
 # --- Styling ---
-ax.set_title('Exchange Volume: Spot vs Derivatives', fontsize=18,
+ax.set_title('Exchange Volume: Spot vs Derivatives', fontsize=22,
              color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
 ax.set_yticks(y)
 ax.set_yticklabels(categories)
-ax.set_xlabel('Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='x', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_xlabel('Volume (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax, grid_axis='x')
 ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: format_number(x)))
-ax.legend(loc='lower right', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+ax.legend(loc='lower right', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -435,9 +410,9 @@ export_chart(fig, 'horizontal_bar_grouped')
 ```
 
 **Variation notes:**
-- For top-3 highlight: `colors = [TEAL if i >= len(categories)-3 else '#B0BEC5' for i in range(len(categories))]` (remember data is reversed)
+- For top-3 highlight: `colors = [PRIMARY_DEFAULT if i >= len(categories)-3 else '#B0BEC5' for i in range(len(categories))]` (remember data is reversed)
 - For percentage bars: set `ax.set_xlim(0, 100)` and add `%` suffix to labels
-- For diverging bars (e.g., sentiment): center at zero, use `TEAL` for positive, `CORAL` for negative
+- For diverging bars (e.g., sentiment): center at zero, use `PRIMARY_DEFAULT` for positive, `'#EF4444'` for negative
 
 ---
 
@@ -492,24 +467,19 @@ for i, (segment, row) in enumerate(zip(segments, data)):
 totals = data.sum(axis=0)
 for j, total in enumerate(totals):
     ax.text(j, total + max(totals) * 0.02, format_number(total),
-            ha='center', va='bottom', fontsize=9, color=TEXT_PRIMARY, weight='bold')
+            ha='center', va='bottom', fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # --- Styling ---
-ax.set_title('Crypto Market Capitalisation by Segment', fontsize=18,
+ax.set_title('Crypto Market Capitalisation by Segment', fontsize=22,
              color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
-ax.set_ylabel('Market Cap (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('Market Cap (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: format_number(x)))
 ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG,
-          fontsize=10, ncol=3)
+          fontsize=12, ncol=3, prop={'weight': 'bold'})
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -552,25 +522,20 @@ for i, (segment, row) in enumerate(zip(segments, data)):
         if val >= 12:  # Only label segments >= 12%
             ax.text(left[j] + val / 2, bar.get_y() + bar.get_height() / 2,
                     f'{val}%', ha='center', va='center',
-                    fontsize=9, color='white', weight='bold')
+                    fontsize=12, color='white', weight='bold')
     left += row
 
 # --- Styling ---
-ax.set_title('Portfolio Allocation Comparison', fontsize=18,
+ax.set_title('Portfolio Allocation Comparison', fontsize=22,
              color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
-ax.set_xlabel('Allocation (%)', fontsize=11, color=TEXT_SECONDARY)
+ax.set_xlabel('Allocation (%)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
 ax.set_xlim(0, 100)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='x', alpha=0.3, linewidth=0.5, zorder=0)
+style_axes(ax, grid_axis='x')
 ax.legend(loc='lower right', framealpha=0.8, edgecolor='none', facecolor=BG,
-          fontsize=10, ncol=2)
+          fontsize=12, ncol=2, prop={'weight': 'bold'})
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -594,7 +559,7 @@ export_chart(fig, 'stacked_bar_horizontal')
 - Dashboard panel: `figsize=(8, 4)`
 
 **Colour assignment:**
-- Single line: `TEAL`
+- Single line: `PRIMARY_DEFAULT`
 - Multi-series: cycle through `CHART_COLORS` in order
 - Benchmark/reference line: `TEXT_MUTED` with dashed style
 - Area fill under line: same colour at `alpha=0.15`
@@ -625,33 +590,28 @@ fig, ax = plt.subplots(figsize=(12, 6), facecolor=BG)
 ax.set_facecolor(BG)
 
 # --- Line ---
-ax.plot(dates, values, color=TEAL, linewidth=2.5, zorder=3)
+ax.plot(dates, values, color=PRIMARY_DEFAULT, linewidth=2.5, zorder=3)
 
 # --- Optional area fill ---
-ax.fill_between(dates, values, alpha=0.15, color=TEAL, zorder=2)
+ax.fill_between(dates, values, alpha=0.15, color=PRIMARY_DEFAULT, zorder=2)
 
 # --- Endpoint annotation ---
 ax.annotate(f'${values[-1]:.0f}',
             xy=(dates[-1], values[-1]),
             xytext=(10, 5), textcoords='offset points',
-            fontsize=10, color=TEAL, weight='bold')
+            fontsize=10, color=PRIMARY_DEFAULT, weight='bold')
 
 # --- Styling ---
-ax.set_title('BTC Weekly Price (2024)', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('BTC Weekly Price (2024)', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=20, loc='center')
-ax.set_ylabel('Price (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('Price (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
 plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -687,26 +647,21 @@ for i, (label, values) in enumerate(series.items()):
     ax.annotate(f'{values[-1]:.1f}%',
                 xy=(months[-1], values[-1]),
                 xytext=(10, 0), textcoords='offset points',
-                fontsize=9, color=CHART_COLORS[i], weight='bold')
+                fontsize=12, color=CHART_COLORS[i], weight='bold')
 
 # --- Styling ---
-ax.set_title('Market Dominance Trends (2024)', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('Market Dominance Trends (2024)', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=20, loc='center')
-ax.set_ylabel('Market Share (%)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('Market Share (%)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
-ax.legend(loc='upper right', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+ax.legend(loc='upper right', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # Expand x-axis for endpoint labels
 ax.set_xlim(months[0] - timedelta(days=5), months[-1] + timedelta(days=30))
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -715,7 +670,7 @@ export_chart(fig, 'line_multi')
 
 **Variation notes:**
 - Dashed reference line: `ax.axhline(y=50, color=TEXT_MUTED, linestyle='--', linewidth=1, alpha=0.5, label='Baseline')`
-- Shaded region between two lines: `ax.fill_between(dates, series1, series2, alpha=0.15, color=TEAL)`
+- Shaded region between two lines: `ax.fill_between(dates, series1, series2, alpha=0.15, color=PRIMARY_DEFAULT)`
 - Log scale: `ax.set_yscale('log')` — useful for crypto price history
 - Confidence interval: plot two boundary lines and `fill_between` them
 
@@ -773,24 +728,19 @@ for i in range(len(labels)):
     ax.plot(months, cumulative[i], color=CHART_COLORS[i], linewidth=1.5, zorder=3)
 
 # --- Styling ---
-ax.set_title('DeFi TVL by Chain (2024)', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('DeFi TVL by Chain (2024)', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=20, loc='center')
-ax.set_ylabel('TVL (USD Billions)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('TVL (USD Billions)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
 
 # Legend in reverse order to match visual stacking
 handles, leg_labels = ax.get_legend_handles_labels()
 ax.legend(handles[::-1], leg_labels[::-1], loc='upper left',
-          framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+          framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -813,9 +763,9 @@ export_chart(fig, 'area_stacked')
 - Wide context: `figsize=(12, 8)`
 
 **Colour assignment:**
-- Single group: `TEAL` with `alpha=0.6`
+- Single group: `PRIMARY_DEFAULT` with `alpha=0.6`
 - Multiple groups: cycle `CHART_COLORS`, `alpha=0.6`
-- Trend line: `CORAL` or `TEXT_MUTED`, dashed
+- Trend line: `PRIMARY[5]` or `TEXT_MUTED`, dashed
 
 **Key styling rules:**
 - Both x and y grid, very subtle
@@ -846,7 +796,7 @@ fig, ax = plt.subplots(figsize=(10, 8), facecolor=BG)
 ax.set_facecolor(BG)
 
 # --- Scatter ---
-ax.scatter(market_cap, volume_24h, c=TEAL, alpha=0.6, s=60,
+ax.scatter(market_cap, volume_24h, c=PRIMARY_DEFAULT, alpha=0.6, s=60,
            edgecolors='white', linewidth=0.5, zorder=3)
 
 # --- Trend line ---
@@ -855,7 +805,7 @@ log_vol = np.log10(volume_24h)
 z = np.polyfit(log_mc, log_vol, 1)
 p = np.poly1d(z)
 x_trend = np.linspace(log_mc.min(), log_mc.max(), 100)
-ax.plot(10**x_trend, 10**p(x_trend), color=CORAL, linewidth=2,
+ax.plot(10**x_trend, 10**p(x_trend), color=PRIMARY[5], linewidth=2,
         linestyle='--', alpha=0.7, zorder=2, label='Trend')
 
 # --- Label notable points ---
@@ -863,26 +813,21 @@ for idx, label in zip(notable_indices, notable_labels):
     ax.annotate(label,
                 xy=(market_cap[idx], volume_24h[idx]),
                 xytext=(12, 8), textcoords='offset points',
-                fontsize=9, color=TEXT_PRIMARY, weight='bold',
+                fontsize=12, color=TEXT_PRIMARY, weight='bold',
                 arrowprops=dict(arrowstyle='->', color=TEXT_MUTED, lw=0.8))
 
 # --- Styling ---
-ax.set_title('Market Cap vs 24h Volume', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('Market Cap vs 24h Volume', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=20, loc='center')
-ax.set_xlabel('Market Cap (USD)', fontsize=11, color=TEXT_SECONDARY)
-ax.set_ylabel('24h Volume (USD)', fontsize=11, color=TEXT_SECONDARY)
+ax.set_xlabel('Market Cap (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+ax.set_ylabel('24h Volume (USD)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
 ax.set_xscale('log')
 ax.set_yscale('log')
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(True, alpha=0.2, linewidth=0.5, zorder=0)
-ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+style_axes(ax, grid_axis='both')
+ax.legend(loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -952,11 +897,11 @@ ax.text(0, 0, '$92B\nTotal TVL', ha='center', va='center',
         fontsize=16, weight='bold', color=TEXT_PRIMARY)
 
 # --- Title ---
-ax.set_title('DeFi TVL by Chain', fontsize=18, color=TEXT_PRIMARY,
+ax.set_title('DeFi TVL by Chain', fontsize=22, color=TEXT_PRIMARY,
              weight='bold', pad=30)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -981,8 +926,8 @@ export_chart(fig, 'donut_chart')
 - Dashboard: `figsize=(8, 6)`
 
 **Colour assignment:**
-- Sequential: `TEAL`-based custom colormap (white to teal)
-- Diverging: `CORAL` (negative) through white to `TEAL` (positive)
+- Sequential: `PRIMARY_DEFAULT`-based custom colormap (white to blue)
+- Diverging: `'#EF4444'` (negative) through white to `PRIMARY_DEFAULT` (positive)
 - Use `matplotlib.colors.LinearSegmentedColormap`
 
 **Key styling rules:**
@@ -1008,9 +953,9 @@ raw = np.random.randn(100, n)
 raw[:, 1] = raw[:, 0] * 0.7 + raw[:, 1] * 0.3  # ETH correlated with BTC
 corr = np.corrcoef(raw.T)
 
-# --- Diverging colormap: CORAL -> white -> TEAL ---
+# --- Diverging colormap: red -> white -> blue ---
 cmap_diverging = mcolors.LinearSegmentedColormap.from_list(
-    'keyrock_diverging', [CORAL, '#FFFFFF', TEAL])
+    'keyrock_diverging', ['#EF4444', '#FFFFFF', PRIMARY_DEFAULT])
 
 # --- Figure ---
 fig, ax = plt.subplots(figsize=(10, 8), facecolor=BG)
@@ -1025,26 +970,26 @@ for i in range(n):
         val = corr[i, j]
         text_color = 'white' if abs(val) > 0.6 else TEXT_PRIMARY
         ax.text(j, i, f'{val:.2f}', ha='center', va='center',
-                fontsize=9, color=text_color, weight='bold')
+                fontsize=12, color=text_color, weight='bold')
 
 # --- Axes ---
 ax.set_xticks(range(n))
 ax.set_yticks(range(n))
-ax.set_xticklabels(assets, fontsize=10, color=TEXT_SECONDARY)
-ax.set_yticklabels(assets, fontsize=10, color=TEXT_SECONDARY)
+ax.set_xticklabels(assets, fontsize=12, color=TEXT_PRIMARY)
+ax.set_yticklabels(assets, fontsize=12, color=TEXT_PRIMARY)
 ax.tick_params(length=0)
 
 # --- Colour bar ---
 cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-cbar.ax.tick_params(labelsize=9, colors=TEXT_SECONDARY)
+cbar.ax.tick_params(labelsize=10, colors=TEXT_PRIMARY)
 cbar.outline.set_visible(False)
 
 # --- Title ---
-ax.set_title('Asset Correlation Matrix (90-Day)', fontsize=18,
+ax.set_title('Asset Correlation Matrix (90-Day)', fontsize=22,
              color=TEXT_PRIMARY, weight='bold', pad=20)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -1052,7 +997,7 @@ export_chart(fig, 'heatmap_correlation')
 ```
 
 **Variation notes:**
-- Sequential heatmap (all positive): use `mcolors.LinearSegmentedColormap.from_list('keyrock_seq', ['#FFFFFF', TEAL])`
+- Sequential heatmap (all positive): use `mcolors.LinearSegmentedColormap.from_list('keyrock_seq', ['#FFFFFF', PRIMARY_DEFAULT])`
 - Time heatmap (hour vs day): reshape data into 24x7 grid, label axes accordingly
 - Large matrix (>12x12): omit cell text labels, rely on colour only
 - Mask diagonal: `corr[np.diag_indices_from(corr)] = np.nan` and use `ax.imshow` with masked array
@@ -1068,9 +1013,9 @@ export_chart(fig, 'heatmap_correlation')
 - Compact: `figsize=(10, 5)`
 
 **Colour assignment:**
-- Starting/ending totals: `BLUE`
-- Positive changes: `TEAL` or `GREEN`
-- Negative changes: `CORAL`
+- Starting/ending totals: `PRIMARY[4]`
+- Positive changes: `'#10B981'` (semantic green)
+- Negative changes: `'#EF4444'` (semantic red)
 - Connector lines: `GRID_COLOR`
 
 **Key styling rules:**
@@ -1114,11 +1059,11 @@ ax.set_facecolor(BG)
 bar_colors = []
 for i, (val, total) in enumerate(zip(values, is_total)):
     if total:
-        bar_colors.append(BLUE)
+        bar_colors.append(PRIMARY[4])       # #001FFF — totals
     elif val >= 0:
-        bar_colors.append(GREEN)
+        bar_colors.append('#10B981')        # Semantic green — positive
     else:
-        bar_colors.append(CORAL)
+        bar_colors.append('#EF4444')        # Semantic red — negative
 
 bottoms = []
 heights = []
@@ -1155,22 +1100,17 @@ for i, bar in enumerate(bars):
         label = f'+${val:.1f}M' if val >= 0 else f'-${abs(val):.1f}M'
     ax.text(bar.get_x() + bar.get_width() / 2, top + 0.5,
             label, ha='center', va='bottom',
-            fontsize=9, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # --- Styling ---
-ax.set_title('Revenue Bridge: Q4 2024 to Q1 2025', fontsize=18,
+ax.set_title('Revenue Bridge: Q4 2024 to Q1 2025', fontsize=22,
              color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
-ax.set_ylabel('Revenue (USD Millions)', fontsize=11, color=TEXT_SECONDARY)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax.set_ylabel('Revenue (USD Millions)', fontsize=12, color=TEXT_PRIMARY, weight='bold')
+style_axes(ax)
 plt.setp(ax.get_xticklabels(), rotation=30, ha='right')
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -1193,8 +1133,8 @@ export_chart(fig, 'waterfall')
 - Wide: `figsize=(14, 6)`
 
 **Colour assignment:**
-- Bars: `TEAL` (primary metric)
-- Line: `CORAL` or `AMBER` (secondary metric on right axis)
+- Bars: `PRIMARY_DEFAULT` (primary metric)
+- Line: `PRIMARY[4]` (secondary metric on right axis)
 - Clearly differentiate — bars and line should never share a colour
 
 **Key styling rules:**
@@ -1225,48 +1165,50 @@ ax1.set_facecolor(BG)
 ax2 = ax1.twinx()
 
 # --- Bars (left axis) ---
-bars = ax1.bar(months, volume, width=0.6, color=TEAL, alpha=0.8,
+bars = ax1.bar(months, volume, width=0.6, color=PRIMARY_DEFAULT, alpha=0.8,
                edgecolor='none', zorder=2, label='Volume')
 
 # --- Line (right axis) ---
-line = ax2.plot(months, price, color=AMBER, linewidth=2.5,
+line = ax2.plot(months, price, color=PRIMARY[4], linewidth=2.5,
                 marker='o', markersize=5, zorder=3, label='BTC Price')
 
 # --- Left axis styling ---
-ax1.set_ylabel('24h Volume (USD)', fontsize=11, color=TEAL)
+ax1.set_ylabel('24h Volume (USD)', fontsize=12, color=PRIMARY_DEFAULT, weight='bold')
 ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: format_number(x)))
-ax1.tick_params(axis='y', colors=TEAL, labelsize=10)
-ax1.tick_params(axis='x', colors=TEXT_SECONDARY, labelsize=10)
+ax1.tick_params(axis='y', colors=PRIMARY_DEFAULT, labelsize=10, width=1, length=4)
+ax1.tick_params(axis='x', colors=X_TICK_COLOR, labelsize=10, width=1, length=4)
 
 # --- Right axis styling ---
-ax2.set_ylabel('BTC Price (USD)', fontsize=11, color=AMBER)
+ax2.set_ylabel('BTC Price (USD)', fontsize=12, color=PRIMARY[4], weight='bold')
 ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'${x:,.0f}'))
-ax2.tick_params(axis='y', colors=AMBER, labelsize=10)
+ax2.tick_params(axis='y', colors=PRIMARY[4], labelsize=10, width=1, length=4)
 
 # --- Spine styling ---
 ax1.spines['top'].set_visible(False)
 ax2.spines['top'].set_visible(False)
-ax1.spines['left'].set_color(TEAL)
-ax1.spines['bottom'].set_color(GRID_COLOR)
-ax2.spines['right'].set_color(AMBER)
+ax1.spines['bottom'].set_visible(False)
+ax1.spines['left'].set_color(PRIMARY_DEFAULT)
+ax1.spines['left'].set_linewidth(2)
+ax2.spines['right'].set_color(PRIMARY[4])
+ax2.spines['right'].set_linewidth(2)
 ax1.spines['right'].set_visible(False)
 
 # --- Grid (from left axis only) ---
-ax1.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0)
+ax1.grid(axis='y', alpha=0.3, linewidth=0.5, zorder=0, color=GRID_COLOR)
 
 # --- Combined legend ---
-bars_legend = plt.Rectangle((0, 0), 1, 1, fc=TEAL, alpha=0.8)
+bars_legend = plt.Rectangle((0, 0), 1, 1, fc=PRIMARY_DEFAULT, alpha=0.8)
 from matplotlib.lines import Line2D
-line_legend = Line2D([0], [0], color=AMBER, linewidth=2.5, marker='o', markersize=5)
+line_legend = Line2D([0], [0], color=PRIMARY[4], linewidth=2.5, marker='o', markersize=5)
 ax1.legend([bars_legend, line_legend], ['Volume', 'BTC Price'],
-           loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=10)
+           loc='upper left', framealpha=0.8, edgecolor='none', facecolor=BG, fontsize=12, prop={'weight': 'bold'})
 
 # --- Title ---
-ax1.set_title('BTC Volume and Price (2024)', fontsize=18,
+ax1.set_title('BTC Volume and Price (2024)', fontsize=22,
               color=TEXT_PRIMARY, weight='bold', pad=20, loc='center')
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 add_keyrock_logo(fig)
@@ -1296,8 +1238,8 @@ export_chart(fig, 'combo_chart')
 
 **Colour assignment:**
 - Category-based: assign each category a colour from `CHART_COLORS`
-- Status-based: `GREEN` (complete), `TEAL` (in progress), `BLUE` (planned), `TEXT_MUTED` (deferred)
-- Milestones: `AMBER` diamond markers
+- Status-based: `'#10B981'` (complete), `PRIMARY_DEFAULT` (in progress), `PRIMARY[1]` (planned), `TEXT_MUTED` (deferred)
+- Milestones: `ACCENT_ORANGE` diamond markers
 
 **Key styling rules:**
 - Horizontal bars along time axis
@@ -1318,19 +1260,19 @@ from datetime import datetime, timedelta
 # --- Data ---
 tasks = [
     {'name': 'MiCA Implementation', 'start': '2024-01-01', 'end': '2024-12-30',
-     'category': 'EU', 'color': TEAL},
+     'category': 'EU', 'color': PRIMARY[0]},
     {'name': 'DORA Compliance', 'start': '2024-06-01', 'end': '2025-01-17',
-     'category': 'EU', 'color': TEAL},
+     'category': 'EU', 'color': PRIMARY[0]},
     {'name': 'UK FCA Crypto Rules', 'start': '2024-03-01', 'end': '2024-09-30',
-     'category': 'UK', 'color': BLUE},
+     'category': 'UK', 'color': PRIMARY[1]},
     {'name': 'US Stablecoin Bill', 'start': '2024-04-01', 'end': '2025-03-31',
-     'category': 'US', 'color': AMBER},
+     'category': 'US', 'color': PRIMARY[2]},
     {'name': 'Basel Crypto Framework', 'start': '2024-01-01', 'end': '2025-06-30',
-     'category': 'Global', 'color': PURPLE},
+     'category': 'Global', 'color': SECONDARY[0]},
     {'name': 'HK Licensing Regime', 'start': '2024-02-01', 'end': '2024-08-31',
-     'category': 'APAC', 'color': GREEN},
+     'category': 'APAC', 'color': PRIMARY[4]},
     {'name': 'Japan Stablecoin Law', 'start': '2024-06-01', 'end': '2024-12-31',
-     'category': 'APAC', 'color': GREEN},
+     'category': 'APAC', 'color': PRIMARY[4]},
 ]
 
 milestones = [
@@ -1359,7 +1301,7 @@ for i, task in enumerate(tasks):
     # Label inside or beside bar
     mid_date = task['start_dt'] + timedelta(days=duration / 2)
     ax.text(mid_date, i, task['name'], ha='center', va='center',
-            fontsize=9, color='white', weight='bold', zorder=4)
+            fontsize=12, color='white', weight='bold', zorder=4)
 
 # --- Milestones ---
 for m in milestones:
@@ -1367,28 +1309,23 @@ for m in milestones:
     matching = [i for i, t in enumerate(tasks) if t['category'] == m['category']]
     if matching:
         y = matching[0]
-        ax.plot(m['date_dt'], y, marker='D', color=AMBER, markersize=10,
+        ax.plot(m['date_dt'], y, marker='D', color=ACCENT_ORANGE, markersize=10,
                 zorder=5, markeredgecolor=BG, markeredgewidth=1.5)
 
 # --- Today line ---
 today = datetime(2025, 1, 15)  # Replace with datetime.now() in production
-ax.axvline(x=today, color=CORAL, linewidth=1.5, linestyle='--', alpha=0.7, zorder=2)
-ax.text(today, len(tasks) - 0.5, ' Today', fontsize=9, color=CORAL,
+ax.axvline(x=today, color=ACCENT_ORANGE, linewidth=1.5, linestyle='--', alpha=0.7, zorder=2)
+ax.text(today, len(tasks) - 0.5, ' Today', fontsize=12, color=ACCENT_ORANGE,
         va='bottom', weight='bold')
 
 # --- Styling ---
 ax.set_yticks(y_positions)
-ax.set_yticklabels([t['name'] for t in tasks], fontsize=10, color=TEXT_SECONDARY)
+ax.set_yticklabels([t['name'] for t in tasks], fontsize=12, color=TEXT_PRIMARY)
 ax.invert_yaxis()
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
 plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_color(GRID_COLOR)
-ax.spines['bottom'].set_color(GRID_COLOR)
-ax.tick_params(colors=TEXT_SECONDARY, labelsize=10)
-ax.grid(axis='x', alpha=0.2, linewidth=0.5, zorder=0)
+style_axes(ax, grid_axis='x')
 
 # --- Category legend ---
 unique_cats = {}
@@ -1397,16 +1334,16 @@ for t in tasks:
         unique_cats[t['category']] = t['color']
 legend_patches = [mpatches.Patch(color=c, label=cat) for cat, c in unique_cats.items()]
 ax.legend(handles=legend_patches, loc='lower right', framealpha=0.8,
-          edgecolor='none', facecolor=BG, fontsize=10, ncol=3)
+          edgecolor='none', facecolor=BG, fontsize=12, ncol=3, prop={'weight': 'bold'})
 
 # --- Title ---
-fig.suptitle('Global Crypto Regulatory Timeline', fontsize=20,
+fig.suptitle('Global Crypto Regulatory Timeline', fontsize=22,
              weight='bold', color=TEXT_PRIMARY, y=0.98)
 ax.set_title('Key frameworks and compliance deadlines', fontsize=12,
-             color=TEXT_SECONDARY, pad=10)
+             color=TEXT_PRIMARY, pad=10)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.93])
 add_keyrock_logo(fig)
@@ -1431,9 +1368,9 @@ export_chart(fig, 'timeline_gantt')
 - Complex: `figsize=(14, 10)`
 
 **Colour assignment:**
-- Process steps: `TEAL` (fill), white text
-- Decision nodes: `AMBER` (fill), dark text
-- Start/end: `BLUE` (fill), white text
+- Process steps: `PRIMARY_DEFAULT` (fill), white text
+- Decision nodes: `PRIMARY[3]` (#DEE2FF pale blue fill), dark text
+- Start/end: `PRIMARY[4]` (fill), white text
 - Arrows: `TEXT_MUTED`
 
 **Key styling rules:**
@@ -1471,10 +1408,10 @@ box_w, box_h = 2.0, 1.4
 
 # Colour mapping
 type_colors = {
-    'start': BLUE,
-    'process': TEAL,
-    'decision': AMBER,
-    'end': BLUE,
+    'start': PRIMARY[4],
+    'process': PRIMARY_DEFAULT,
+    'decision': PRIMARY[3],
+    'end': PRIMARY[4],
 }
 
 # --- Figure ---
@@ -1495,7 +1432,7 @@ for step in steps:
         zorder=3)
     ax.add_patch(bbox)
     ax.text(step['x'], step['y'], step['text'], ha='center', va='center',
-            fontsize=11, color=text_color, weight='bold', zorder=4)
+            fontsize=12, color=text_color, weight='bold', zorder=4)
 
 # --- Draw arrows ---
 for src_id, dst_id, label in connections:
@@ -1524,16 +1461,16 @@ for src_id, dst_id, label in connections:
         mid_x = (start[0] + end[0]) / 2
         mid_y = (start[1] + end[1]) / 2
         ax.text(mid_x, mid_y + 0.3, label, ha='center', va='bottom',
-                fontsize=9, color=TEXT_SECONDARY, style='italic',
+                fontsize=12, color=TEXT_PRIMARY,
                 bbox=dict(boxstyle='round,pad=0.2', facecolor=BG,
                          edgecolor='none', alpha=0.8))
 
 # --- Title ---
-fig.suptitle('Client Onboarding Process', fontsize=20,
+fig.suptitle('Client Onboarding Process', fontsize=22,
              weight='bold', color=TEXT_PRIMARY, y=0.96)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 add_keyrock_logo(fig)
 export_chart(fig, 'flowchart')
@@ -1612,7 +1549,7 @@ for i, (pos, label) in enumerate(zip(node_positions, nodes)):
         zorder=3)
     ax.add_patch(bbox)
     ax.text(pos[0], pos[1], label, ha='center', va='center',
-            fontsize=11, color='white', weight='bold', zorder=4)
+            fontsize=12, color='white', weight='bold', zorder=4)
 
 # --- Draw arrows between nodes ---
 arrow_radius = radius * 0.85  # Slightly inside the node circle
@@ -1642,7 +1579,7 @@ fig.suptitle('The Liquidity Flywheel', fontsize=22,
              weight='bold', color=TEXT_PRIMARY, y=0.96)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 add_keyrock_logo(fig)
 export_chart(fig, 'flywheel')
@@ -1667,7 +1604,7 @@ export_chart(fig, 'flywheel')
 
 **Colour assignment:**
 - Input streams: each gets a colour from `CHART_COLORS`
-- Focal point: `TEAL` or prominent colour
+- Focal point: `PRIMARY_DEFAULT` or prominent colour
 - Arrows/lines: match input stream colours
 
 **Key styling rules:**
@@ -1718,20 +1655,20 @@ for i, (inp, y) in enumerate(zip(inputs, y_positions)):
         boxstyle='round,pad=0.15', facecolor=color, edgecolor='none', zorder=3)
     ax.add_patch(bbox)
     ax.text(input_x, y, inp['text'], ha='center', va='center',
-            fontsize=11, color='white', weight='bold', zorder=4)
+            fontsize=12, color='white', weight='bold', zorder=4)
     # Description below box
     ax.text(input_x, y - box_h / 2 - 0.25, inp['desc'],
-            ha='center', va='top', fontsize=8, color=TEXT_MUTED, style='italic')
+            ha='center', va='top', fontsize=12, color=TEXT_MUTED)
 
 # --- Focal point (right side) ---
 focal_x, focal_y = 10.5, 4.0
 focal_r = 1.5
-circle = Circle((focal_x, focal_y), focal_r, facecolor=TEAL,
+circle = Circle((focal_x, focal_y), focal_r, facecolor=PRIMARY_DEFAULT,
                 edgecolor='none', zorder=3, alpha=0.9)
 ax.add_patch(circle)
 # Outer glow ring
 circle_glow = Circle((focal_x, focal_y), focal_r + 0.2, facecolor='none',
-                      edgecolor=TEAL, linewidth=2, zorder=2, alpha=0.3)
+                      edgecolor=PRIMARY_DEFAULT, linewidth=2, zorder=2, alpha=0.3)
 ax.add_patch(circle_glow)
 ax.text(focal_x, focal_y, focal_point, ha='center', va='center',
         fontsize=14, color='white', weight='bold', zorder=4)
@@ -1748,11 +1685,11 @@ for i, y in enumerate(y_positions):
     ax.add_patch(arrow)
 
 # --- Title ---
-fig.suptitle('Forces Converging on Institutional Crypto Adoption', fontsize=20,
+fig.suptitle('Forces Converging on Institutional Crypto Adoption', fontsize=22,
              weight='bold', color=TEXT_PRIMARY, y=0.96)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 add_keyrock_logo(fig)
 export_chart(fig, 'convergence_diagram')
@@ -1776,8 +1713,8 @@ export_chart(fig, 'convergence_diagram')
 - Rule of thumb: `height = 1 + 0.6 * n_rows`
 
 **Colour assignment:**
-- Status indicators: `GREEN` (pass/good), `AMBER` (warning/partial), `CORAL` (fail/poor)
-- Header row: `TEAL` background, white text
+- Status indicators: `'#10B981'` (pass/good), `ACCENT_ORANGE` (warning/partial), `'#EF4444'` (fail/poor)
+- Header row: `PRIMARY_DEFAULT` background, white text
 - Alternating row backgrounds: `BG` and slightly tinted `BG`
 
 **Key styling rules:**
@@ -1807,12 +1744,12 @@ rows = [
 
 # Status colour mapping
 status_colors = {
-    'High': GREEN, 'Full': GREEN, 'Strong': GREEN, 'Low': GREEN, 'A': GREEN, 'A-': GREEN,
-    'Medium': AMBER, 'Partial': AMBER, 'B+': AMBER, 'B': AMBER,
-    'Low': AMBER, 'Minimal': CORAL, 'C+': CORAL, 'C': CORAL,
+    'High': '#10B981', 'Full': '#10B981', 'Strong': '#10B981', 'Low': '#10B981', 'A': '#10B981', 'A-': '#10B981',
+    'Medium': ACCENT_ORANGE, 'Partial': ACCENT_ORANGE, 'B+': ACCENT_ORANGE, 'B': ACCENT_ORANGE,
+    'Low': ACCENT_ORANGE, 'Minimal': '#EF4444', 'C+': '#EF4444', 'C': '#EF4444',
 }
 # Override 'Low' context-specifically
-fee_colors = {'Low': GREEN, 'Medium': AMBER, 'High': CORAL}
+fee_colors = {'Low': '#10B981', 'Medium': ACCENT_ORANGE, 'High': '#EF4444'}
 
 n_cols = len(headers)
 n_rows = len(rows)
@@ -1836,11 +1773,11 @@ start_y = (n_rows + 1) * row_h + 0.5
 x_pos = start_x
 for j, (header, w) in enumerate(zip(headers, col_widths)):
     rect = FancyBboxPatch((x_pos, start_y), w - 0.05, row_h,
-                           boxstyle='round,pad=0.05', facecolor=TEAL,
+                           boxstyle='round,pad=0.05', facecolor=PRIMARY_DEFAULT,
                            edgecolor='none', zorder=2)
     ax.add_patch(rect)
     ax.text(x_pos + w / 2, start_y + row_h / 2, header,
-            ha='center', va='center', fontsize=10, color='white',
+            ha='center', va='center', fontsize=12, color='white',
             weight='bold', zorder=3)
     x_pos += w
 
@@ -1865,24 +1802,24 @@ for i, row in enumerate(rows):
             ax.plot(x_pos + 0.25, y + row_h / 2, 'o', color=dot_color,
                     markersize=6, zorder=3)
             ax.text(x_pos + w / 2 + 0.1, y + row_h / 2, cell,
-                    ha='center', va='center', fontsize=10,
+                    ha='center', va='center', fontsize=12,
                     color=TEXT_PRIMARY, zorder=3)
         else:
             align = 'left' if j == 0 else 'center'
             offset = 0.15 if j == 0 else 0
             ax.text(x_pos + offset + w / 2 * (0 if j == 0 else 1),
                     y + row_h / 2, cell,
-                    ha=align, va='center', fontsize=10,
+                    ha=align, va='center', fontsize=12,
                     color=TEXT_PRIMARY, weight='bold' if j == 0 else 'normal',
                     zorder=3)
         x_pos += w
 
 # --- Title ---
-fig.suptitle('Exchange Scorecard', fontsize=20, weight='bold',
+fig.suptitle('Exchange Scorecard', fontsize=22, weight='bold',
              color=TEXT_PRIMARY, y=0.97)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.93])
 add_keyrock_logo(fig)
@@ -1909,8 +1846,8 @@ export_chart(fig, 'scorecard')
 **Colour assignment:**
 - Card background: slightly tinted BG (light: `#F8FAFB`, dark: `#0F2035`)
 - Metric value: `TEXT_PRIMARY`
-- Trend up: `GREEN`
-- Trend down: `CORAL`
+- Trend up: `'#10B981'` (inline green)
+- Trend down: `'#EF4444'` (inline red)
 - Neutral: `TEXT_MUTED`
 - Accent border on left: matches metric category colour from `CHART_COLORS`
 
@@ -1931,13 +1868,13 @@ from matplotlib.patches import FancyBboxPatch, Rectangle
 # --- Data ---
 metrics = [
     {'label': 'Total Volume (24h)', 'value': '$142.3B',
-     'change': '+12.4%', 'trend': 'up', 'color': TEAL},
+     'change': '+12.4%', 'trend': 'up', 'color': PRIMARY_DEFAULT},
     {'label': 'Active Markets', 'value': '2,847',
-     'change': '+89', 'trend': 'up', 'color': BLUE},
+     'change': '+89', 'trend': 'up', 'color': PRIMARY[1]},
     {'label': 'Avg Spread (BPS)', 'value': '3.2',
-     'change': '-0.8', 'trend': 'up', 'color': GREEN},  # Lower spread is good
+     'change': '-0.8', 'trend': 'up', 'color': PRIMARY[2]},  # Lower spread is good
     {'label': 'Fill Rate', 'value': '94.7%',
-     'change': '-1.2%', 'trend': 'down', 'color': CORAL},
+     'change': '-1.2%', 'trend': 'down', 'color': PRIMARY[4]},
 ]
 
 n_cards = len(metrics)
@@ -1967,24 +1904,24 @@ for i, (ax, metric) in enumerate(zip(axes, metrics)):
 
     # Label
     ax.text(5.2, 7.5, metric['label'], ha='center', va='center',
-            fontsize=10, color=TEXT_MUTED, zorder=3)
+            fontsize=12, color=TEXT_MUTED, zorder=3)
 
     # Value (large)
     ax.text(5.2, 5.0, metric['value'], ha='center', va='center',
             fontsize=30, color=TEXT_PRIMARY, weight='bold', zorder=3)
 
     # Trend indicator
-    trend_color = GREEN if metric['trend'] == 'up' else CORAL
+    trend_color = '#10B981' if metric['trend'] == 'up' else '#EF4444'
     arrow = '\u25B2' if metric['trend'] == 'up' else '\u25BC'  # Unicode triangles
     ax.text(5.2, 2.5, f'{arrow} {metric["change"]}', ha='center', va='center',
             fontsize=12, color=trend_color, weight='bold', zorder=3)
 
 # --- Title ---
-fig.suptitle('Market Making Dashboard', fontsize=20, weight='bold',
+fig.suptitle('Market Making Dashboard', fontsize=22, weight='bold',
              color=TEXT_PRIMARY, y=1.02)
 
 # --- Source ---
-fig.text(0.01, -0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, -0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.02, 1, 0.95])
 add_keyrock_logo(fig)
@@ -2011,9 +1948,9 @@ export_chart(fig, 'kpi_cards')
 
 **Colour assignment:**
 - Column headers: each item gets a colour from `CHART_COLORS`
-- Checkmarks/present: `GREEN`
-- Crosses/absent: `CORAL`
-- Partial: `AMBER`
+- Checkmarks/present: `'#10B981'` (inline green)
+- Crosses/absent: `'#EF4444'` (inline red)
+- Partial: `ACCENT_ORANGE`
 - Attribute labels: `TEXT_PRIMARY`
 
 **Key styling rules:**
@@ -2031,7 +1968,7 @@ from matplotlib.patches import FancyBboxPatch
 
 # --- Data ---
 items = ['Keyrock', 'Competitor A', 'Competitor B']
-item_colors = [TEAL, BLUE, PURPLE]
+item_colors = [PRIMARY[0], PRIMARY[4], SECONDARY[0]]
 attributes = [
     'Deep Liquidity',
     '24/7 Coverage',
@@ -2075,7 +2012,7 @@ start_y = (n_attrs + 1) * row_h
 # --- Header row ---
 # Attribute column header
 ax.text(start_x + attr_col_w / 2, start_y + row_h / 2, 'Feature',
-        ha='center', va='center', fontsize=11, color=TEXT_MUTED, weight='bold')
+        ha='center', va='center', fontsize=12, color=TEXT_MUTED, weight='bold')
 
 for j, (item, color) in enumerate(zip(items, item_colors)):
     x = start_x + attr_col_w + j * col_w
@@ -2084,7 +2021,7 @@ for j, (item, color) in enumerate(zip(items, item_colors)):
                            edgecolor='none', zorder=2)
     ax.add_patch(rect)
     ax.text(x + col_w / 2, start_y + row_h / 2, item,
-            ha='center', va='center', fontsize=11, color='white',
+            ha='center', va='center', fontsize=12, color='white',
             weight='bold', zorder=3)
 
 # --- Data rows ---
@@ -2100,27 +2037,27 @@ for i, (attr, row) in enumerate(zip(attributes, data)):
 
     # Attribute label
     ax.text(start_x + 0.2, y + row_h / 2, attr,
-            ha='left', va='center', fontsize=10, color=TEXT_PRIMARY, zorder=1)
+            ha='left', va='center', fontsize=12, color=TEXT_PRIMARY, zorder=1)
 
     # Values
     for j, val in enumerate(row):
         x = start_x + attr_col_w + j * col_w + col_w / 2
         if val is True:
             ax.text(x, y + row_h / 2, '\u2713', ha='center', va='center',
-                    fontsize=16, color=GREEN, weight='bold', zorder=1)
+                    fontsize=16, color='#10B981', weight='bold', zorder=1)
         elif val is False:
             ax.text(x, y + row_h / 2, '\u2717', ha='center', va='center',
-                    fontsize=16, color=CORAL, weight='bold', zorder=1)
+                    fontsize=16, color='#EF4444', weight='bold', zorder=1)
         else:
             ax.text(x, y + row_h / 2, '\u2014', ha='center', va='center',
-                    fontsize=16, color=AMBER, weight='bold', zorder=1)
+                    fontsize=16, color=ACCENT_ORANGE, weight='bold', zorder=1)
 
 # --- Title ---
-fig.suptitle('Market Maker Comparison', fontsize=20, weight='bold',
+fig.suptitle('Market Maker Comparison', fontsize=22, weight='bold',
              color=TEXT_PRIMARY, y=0.97)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.93])
 add_keyrock_logo(fig)
@@ -2195,19 +2132,19 @@ for i, (r, label, val, pct, color) in enumerate(zip(rects, labels, values, perce
         # Value
         ax.text(r['x'] + r['dx'] / 2, r['y'] + r['dy'] / 2 - 0.3,
                 f'${val}B ({pct:.1f}%)', ha='center', va='center',
-                fontsize=9, color='white', alpha=0.85, zorder=3)
+                fontsize=12, color='white', alpha=0.85, zorder=3)
 
 ax.set_xlim(0, 12)
 ax.set_ylim(0, 8)
 ax.axis('off')
 
 # --- Title ---
-fig.suptitle('Crypto Market Cap Distribution', fontsize=20, weight='bold',
+fig.suptitle('Crypto Market Cap Distribution', fontsize=22, weight='bold',
              color=TEXT_PRIMARY, y=0.97)
-ax.set_title('Total Market Cap: $1.8T', fontsize=12, color=TEXT_SECONDARY, pad=10)
+ax.set_title('Total Market Cap: $1.8T', fontsize=12, color=TEXT_PRIMARY, pad=10)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 plt.tight_layout(rect=[0, 0.05, 1, 0.93])
 add_keyrock_logo(fig)
@@ -2233,7 +2170,7 @@ export_chart(fig, 'treemap')
 **Colour assignment:**
 - Flows: inherit colour from source node with `alpha=0.4`
 - Nodes: cycle through `CHART_COLORS`
-- Or: all flows in `TEAL` with varying alpha
+- Or: all flows in `PRIMARY_DEFAULT` with varying alpha
 
 **Key styling rules:**
 - Nodes as vertical bars on left and right (or multiple stages)
@@ -2352,7 +2289,7 @@ for i, (pos, label, val) in enumerate(zip(src_pos, sources, source_values)):
     ax.add_patch(rect)
     ax.text(pos['x'] - 0.2, (pos['y_top'] + pos['y_bot']) / 2,
             f'{label}\n${val}B', ha='right', va='center',
-            fontsize=10, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # --- Draw destination nodes ---
 for j, (pos, label, val) in enumerate(zip(dst_pos, destinations, dst_values)):
@@ -2361,14 +2298,14 @@ for j, (pos, label, val) in enumerate(zip(dst_pos, destinations, dst_values)):
     ax.add_patch(rect)
     ax.text(pos['x'] + node_width + 0.2, (pos['y_top'] + pos['y_bot']) / 2,
             f'{label}\n${val}B', ha='left', va='center',
-            fontsize=10, color=TEXT_PRIMARY, weight='bold')
+            fontsize=12, color=TEXT_PRIMARY, weight='bold')
 
 # --- Title ---
-fig.suptitle('Trading Volume Flow: Source to Strategy', fontsize=20,
+fig.suptitle('Trading Volume Flow: Source to Strategy', fontsize=22,
              weight='bold', color=TEXT_PRIMARY, y=0.97)
 
 # --- Source ---
-fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=8, color=TEXT_MUTED, style='italic')
+fig.text(0.01, 0.02, 'Source: Keyrock Research', fontsize=10, color=TEXT_MUTED)
 
 add_keyrock_logo(fig)
 export_chart(fig, 'sankey_diagram')
@@ -2424,8 +2361,8 @@ Most templates use only `matplotlib` and `numpy` (standard). Special chart types
 1. Background colour set on both `fig` and `ax` (`facecolor=BG`)
 2. Top and right spines removed
 3. Grid is subtle (`alpha=0.3`, `linewidth=0.5`)
-4. Tick and label colours use `TEXT_SECONDARY`
-5. Title uses `TEXT_PRIMARY`, `weight='bold'`, `fontsize=18-20`
+4. Tick and label colours use `TEXT_PRIMARY`
+5. Title uses `TEXT_PRIMARY`, `weight='bold'`, `fontsize=22-20`
 6. Source line present at bottom left
 7. `add_keyrock_logo(fig)` called
 8. `export_chart(fig, name)` called
