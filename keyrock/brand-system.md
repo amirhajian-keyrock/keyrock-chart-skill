@@ -48,8 +48,8 @@ Use **only** to highlight a specific series or data point. Never as a default da
 | BG | `#FFFFFF` | Primary background |
 | BG_PANEL | `#F8FAFC` | Card / panel background |
 | BG_CARD | `#F1F5F9` | Elevated surface |
-| TEXT_PRIMARY | `#1F1F1F` | Primary text, X-axis, X-axis tick marks |
-| TEXT_MUTED | `#9B9B9B` | Source lines, Y-axis tick marks |
+| TEXT_PRIMARY | `#1F1F1F` | Primary text, X-axis line |
+| TEXT_MUTED | `#9B9B9B` | Source lines, X and Y axis tick marks |
 | GRID_COLOR | `#E2E8F0` | Horizontal gridlines |
 | BORDER_COLOR | `#CBD5E1` | Borders |
 
@@ -73,7 +73,7 @@ For contexts where directional colour is essential (waterfall charts, KPI trend 
 | Title | 22px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
 | Subtitle | 12px | Regular | `#1F1F1F` (TEXT_PRIMARY) |
 | Axis labels | 12px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
-| Tick labels | 10px | Regular | `#1F1F1F` (X-axis) / `#9B9B9B` (Y-axis) |
+| Tick labels | 10px | Regular | `#9B9B9B` (both X and Y axis) |
 | Legend | 12px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
 | Data labels / Annotations | 12px | Bold | Series colour, or `#FF7800` / `#3867FF` / `#A580FF` |
 | Source line | 10px | Regular | `#9B9B9B` (TEXT_MUTED) |
@@ -216,7 +216,7 @@ Colours are assigned in this strict priority order:
 ### Tick Marks
 
 - **Y-axis ticks:** 1px width, colour `#9B9B9B` — horizontal gridlines at tick positions extend the full chart width, serving as visual reference lines in place of the Y-axis spine
-- **X-axis ticks:** 1px width, colour `#1F1F1F`
+- **X-axis ticks:** 1px width, colour `#9B9B9B`
 - **Placement:** Ticks on main data points only
 
 ### Gridlines
@@ -299,8 +299,8 @@ CHART_COLORS = PRIMARY.copy()
 CHART_COLORS_EXTENDED = PRIMARY + SECONDARY
 
 # Axis styling
-X_AXIS_COLOR = TEXT_PRIMARY    # #1F1F1F
-Y_TICK_COLOR = TEXT_MUTED      # #9B9B9B
+X_AXIS_COLOR = TEXT_PRIMARY    # #1F1F1F — X-axis line only
+TICK_COLOR = TEXT_MUTED        # #9B9B9B — both X and Y tick marks
 GRID_COLOR = '#E2E8F0'
 BORDER_COLOR = '#CBD5E1'
 
@@ -320,8 +320,8 @@ plt.rcParams.update({
     'axes.labelcolor': TEXT_PRIMARY,
     'axes.labelweight': 'bold',
     'axes.labelsize': 12,
-    'xtick.color': TEXT_PRIMARY,
-    'ytick.color': Y_TICK_COLOR,
+    'xtick.color': TICK_COLOR,
+    'ytick.color': TICK_COLOR,
     'xtick.labelsize': 10,
     'ytick.labelsize': 10,
     'grid.color': GRID_COLOR,
@@ -346,7 +346,7 @@ BG_CARD = '#1A2D4A'
 TEXT_PRIMARY = '#FFFFFF'
 TEXT_MUTED = '#9B9B9B'
 X_AXIS_COLOR = '#FFFFFF'
-Y_TICK_COLOR = '#9B9B9B'
+TICK_COLOR = '#9B9B9B'
 GRID_COLOR = '#1E3A5F'
 BORDER_COLOR = '#2D4A6F'
 
@@ -358,8 +358,8 @@ plt.rcParams.update({
     'figure.facecolor': BG,
     'axes.edgecolor': BORDER_COLOR,
     'axes.labelcolor': TEXT_PRIMARY,
-    'xtick.color': TEXT_PRIMARY,
-    'ytick.color': Y_TICK_COLOR,
+    'xtick.color': TICK_COLOR,
+    'ytick.color': TICK_COLOR,
     'grid.color': GRID_COLOR,
     'grid.alpha': 0.2,
 })
@@ -382,8 +382,8 @@ def style_axes(ax, grid_axis='y'):
     ax.spines['bottom'].set_color(X_AXIS_COLOR)
     ax.spines['bottom'].set_linewidth(2)
 
-    ax.tick_params(axis='y', colors=Y_TICK_COLOR, labelsize=10, width=1, length=4)
-    ax.tick_params(axis='x', colors=X_AXIS_COLOR, labelsize=10, width=1, length=4)
+    ax.tick_params(axis='y', colors=TICK_COLOR, labelsize=10, width=1, length=4)
+    ax.tick_params(axis='x', colors=TICK_COLOR, labelsize=10, width=1, length=4)
 
     if grid_axis:
         ax.grid(axis=grid_axis, alpha=0.3, linewidth=0.5, zorder=0, color=GRID_COLOR)
