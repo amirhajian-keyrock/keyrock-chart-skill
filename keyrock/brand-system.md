@@ -49,8 +49,8 @@ Use **only** to highlight a specific series or data point. Never as a default da
 | BG_PANEL | `#F8FAFC` | Card / panel background |
 | BG_CARD | `#F1F5F9` | Elevated surface |
 | TEXT_PRIMARY | `#1F1F1F` | Primary text, X-axis line |
-| TEXT_MUTED | `#9B9B9B` | Source lines, X and Y axis tick marks |
-| GRID_COLOR | `#E2E8F0` | Horizontal gridlines |
+| TEXT_MUTED | `#9B9B9B` | X and Y axis tick marks |
+| GRID_COLOR | `#5F5F5F` | Horizontal gridlines |
 | BORDER_COLOR | `#CBD5E1` | Borders |
 
 ### 1.5 Semantic Exceptions (Inline Only)
@@ -70,13 +70,13 @@ For contexts where directional colour is essential (waterfall charts, KPI trend 
 
 | Element | Size | Weight | Colour |
 |---|---|---|---|
-| Title | 22px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
+| Title | 18px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
 | Subtitle | 12px | Regular | `#1F1F1F` (TEXT_PRIMARY) |
 | Axis labels | 12px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
 | Tick labels | 10px | Regular | `#9B9B9B` (both X and Y axis) |
 | Legend | 12px | Bold | `#1F1F1F` (TEXT_PRIMARY) |
 | Data labels / Annotations | 12px | Bold | Series colour, or `#FF7800` / `#3867FF` / `#A580FF` |
-| Source line | 10px | Regular | `#9B9B9B` (TEXT_MUTED) |
+| Source line | 8px | Regular | `#1F1F1F` (TEXT_PRIMARY) |
 
 ### Font Stack
 
@@ -126,7 +126,7 @@ Located in `~/.claude/keyrock/assets/`:
 - **Default text:** "Source: Keyrock Research"
 - User may override with a specific source string
 - **Position:** Far-left of the chart (x=0.01), bottom
-- **Format:** 10px, Regular, `#9B9B9B`
+- **Format:** 8px, Regular, `#1F1F1F` (TEXT_PRIMARY)
 - Encouraged by default; user can request omission
 
 ---
@@ -301,7 +301,7 @@ CHART_COLORS_EXTENDED = PRIMARY + SECONDARY
 # Axis styling
 X_AXIS_COLOR = TEXT_PRIMARY    # #1F1F1F — X-axis line only
 TICK_COLOR = TEXT_MUTED        # #9B9B9B — both X and Y tick marks
-GRID_COLOR = '#E2E8F0'
+GRID_COLOR = '#5F5F5F'
 BORDER_COLOR = '#CBD5E1'
 
 # Kerning note: Designer spec is -10 tracking for all text.
@@ -468,5 +468,5 @@ Negative   #EF4444   (red)
 
 Structural:
 BG           #FFFFFF   TEXT_PRIMARY  #1F1F1F
-TEXT_MUTED   #9B9B9B   GRID_COLOR   #E2E8F0
+TEXT_MUTED   #9B9B9B   GRID_COLOR   #5F5F5F
 ```
